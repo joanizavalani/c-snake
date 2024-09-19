@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
 
     if (SDL_Init(SDL_INIT_VIDEO < 0)) {
 
-        fprintf(stderr, "Error: SDL_INIT_VIDEO");
+        fprintf(stderr, "Error: SDL_Init failed: %s\n", SDL_GetError());
+        return 1;
     }
 
     SDL_Window *window = SDL_CreateWindow(
@@ -29,7 +30,9 @@ int main(int argc, char *argv[]) {
 
     if (!window) {
 
-        fprintf(stderr, "Error: couldn't find window");
+        fprintf(stderr, "Error: SDL_Window failed: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
     }
 
     SDL_Renderer *renderer = SDL_CreateRenderer(
@@ -37,7 +40,10 @@ int main(int argc, char *argv[]) {
 
     if (!renderer) {
 
-        fprintf(stderr, "Error: couldn't find renderer");
+        fprintf(stderr, "Error: SDL_Renderer failed: %s\n", SDL_GetError());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
     }
 
     SDL_SetRenderDrawColor(renderer, 0xdb, 0x7c, 0x4d, 255);
