@@ -1,0 +1,3 @@
+C:/Users/joani/OneDrive/Desktop/Projects/CLion/c-snake/cmake-build-debug/CMakeFiles/c_snake.dir
+C:/Users/joani/OneDrive/Desktop/Projects/CLion/c-snake/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/joani/OneDrive/Desktop/Projects/CLion/c-snake/cmake-build-debug/CMakeFiles/rebuild_cache.dir
