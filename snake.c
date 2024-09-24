@@ -1,5 +1,4 @@
 #include "snake.h"
-#include <SDL.h>
 
 /*  ################      So the snake lies on a grid-- like the one of the left--
     #  □□□         #      and it grows by consuming randomly generated fruit,
@@ -14,33 +13,129 @@
 #define GRID_SIZE 18
 #define GRID_DIMENSIONS 400
 
+int getGridPosition(int windowDimension, int gridDimension) {
+
+    return (windowDimension / 2) - (gridDimension / 2);
+}
+
+enum {
+    snakeUP,
+    snakeDOWN,
+    snakeLEFT,
+    snakeRIGHT
+};
+
+struct snake {
+    int x;
+    int y;
+    int direction;
+    struct snake *next;
+
+}; typedef struct snake Snake;
+
+Snake *snakeHead;
+Snake *snakeTail;
+
+void initializeSnake() {
+
+    Snake *newSnake = malloc(sizeof(Snake));
+
+    newSnake -> x = rand() % ((GRID_SIZE * 3) / 4);
+    newSnake -> y = rand() % ((GRID_SIZE * 3) / 4);
+    newSnake -> direction = rand() % 4;
+    newSnake -> next = NULL;
+
+    snakeHead = newSnake;
+    snakeTail = newSnake;
+}
+
+void increaseSnake() {
+
+    Snake *newSnakeCell = malloc(sizeof(Snake));
+
+    newSnakeCell -> x = snakeTail -> x;
+    newSnakeCell -> y = snakeTail -> y;
+    newSnakeCell -> direction = snakeTail -> direction;
+
+    switch (snakeTail -> direction) {
+
+        case snakeUP:
+            newSnakeCell -> y -= 1;
+            break;
+
+        case snakeDOWN:
+            newSnakeCell -> y += 1;
+            break;
+
+        case snakeLEFT:
+            newSnakeCell -> x -= 1;
+            break;
+
+        case snakeRIGHT:
+            newSnakeCell -> x += 1;
+            break;
+    }
+
+    newSnakeCell -> next = NULL;
+    snakeTail -> next = newSnakeCell;
+}
+
+void renderSnake(SDL_Renderer *renderer, int x, int y) {
+
+    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 255);
+
+    int snakeCellSize = GRID_DIMENSIONS / GRID_SIZE;
+
+    SDL_Rect snakeCell;
+    snakeCell.w = snakeCellSize;
+    snakeCell.h = snakeCellSize;
+
+    Snake *track = snakeHead; // starting from the head of the snake
+
+    // looping through the entire snake (linked list), calculating the (x, y) position
+    // of the current cell, until we reach the last segment
+    while (track != NULL) {
+
+        snakeCell.x = x + track -> x * snakeCellSize;
+        snakeCell.y = y + track -> y * snakeCellSize;
+
+        SDL_RenderFillRect(renderer, &snakeCell);
+
+        track = track -> next; // move to the next cell of the snake
+    }
+}
+
+// Draws a rectangular grid starting from (x, y), iterating through grid cells
 void renderGrid(SDL_Renderer *renderer, int x, int y) {
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255);
 
     int cellSize = GRID_DIMENSIONS / GRID_SIZE;
 
-    SDL_Rect cell;
-    cell.w = cellSize;
-    cell.h = cellSize;
+    SDL_Rect gridCell;
+    gridCell.w = cellSize;
+    gridCell.h = cellSize;
 
     for (int i = 0; i < GRID_SIZE; i++) {
 
         for (int j = 0; j < GRID_SIZE; j++) {
 
-            cell.x = x + (i * cellSize);
-            cell.y = y + (j * cellSize);
+            gridCell.x = x + (i * cellSize);
+            gridCell.y = y + (j * cellSize);
 
             //  for each cell, the x and y coordinate are calculated as the
             //  start position (x, y) plus the width of all previous cells
             //  in the row.
 
-            SDL_RenderDrawRect(renderer, &cell);
+            SDL_RenderDrawRect(renderer, &gridCell);
         }
     }
 }
 
 int main(int argc, char *argv[]) {
+
+    initializeSnake();
+    increaseSnake();
 
     if (SDL_Init(SDL_INIT_VIDEO < 0)) {
 
@@ -76,8 +171,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int grid_x = (WINDOW_WIDTH / 2) - (GRID_DIMENSIONS / 2);
-    int grid_y = (WINDOW_HEIGHT / 2) - (GRID_DIMENSIONS / 2);
+    int gridPosition_x = getGridPosition(WINDOW_WIDTH, GRID_DIMENSIONS);
+    int gridPosition_y = getGridPosition(WINDOW_HEIGHT, GRID_DIMENSIONS);
 
     // below, the while loop continuously runs, checking for key presses using SDL_PollEvent.
     // it handles real-time user input and window events. If the user presses the esc key or
@@ -110,7 +205,8 @@ int main(int argc, char *argv[]) {
         // the rendering process keeps happening whilst the program is running
         SDL_RenderClear(renderer);
 
-        renderGrid(renderer, grid_x, grid_y);
+        renderGrid(renderer, gridPosition_x, gridPosition_y);
+        renderSnake(renderer, gridPosition_x, gridPosition_y);
 
         SDL_SetRenderDrawColor(renderer, 0xdb, 0x7c, 0x4d, 255);
         SDL_RenderPresent(renderer);
